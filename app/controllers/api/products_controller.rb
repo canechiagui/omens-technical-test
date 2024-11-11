@@ -1,14 +1,20 @@
-class ProductsController < ApplicationController
+class Api::ProductsController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [:create, :update, :destroy]
+
   before_action :set_product, only: %i[ show edit update destroy ]
 
   # GET /products
   def index
     @products = Product.all
+    render json: @products
   end
+
 
   # GET /products/1
   def show
+    render json: @product
   end
+
 
   # GET /products/new
   def new
@@ -24,26 +30,29 @@ class ProductsController < ApplicationController
     @product = Product.new(product_params)
 
     if @product.save
-      redirect_to @product, notice: "Product was successfully created."
+      render json: @product, status: :created
     else
-      render :new, status: :unprocessable_entity
+      render json: { errors: @product.errors.full_messages }, status: :unprocessable_entity
     end
   end
+
 
   # PATCH/PUT /products/1
   def update
     if @product.update(product_params)
-      redirect_to @product, notice: "Product was successfully updated.", status: :see_other
+      render json: @product, status: :ok
     else
-      render :edit, status: :unprocessable_entity
+      render json: { errors: @product.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
+
   # DELETE /products/1
   def destroy
-    @product.destroy!
-    redirect_to products_url, notice: "Product was successfully destroyed.", status: :see_other
+    @product.destroy
+    render json: { message: "Product was successfully destroyed" }, status: :ok
   end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.
